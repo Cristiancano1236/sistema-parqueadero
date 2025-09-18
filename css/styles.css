@@ -1,0 +1,83 @@
+/* Estilos generales */
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
+}
+
+/* Estilos para la tarjeta de login */
+.login-card {
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 15px;
+    transition: transform 0.3s ease;
+}
+
+.login-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Estilos para los inputs */
+.form-control {
+    border: 1px solid #e0e0e0;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #1a237e;
+    box-shadow: 0 0 0 0.2rem rgba(26, 35, 126, 0.15);
+}
+
+/* Estilos para los botones */
+.btn-primary {
+    background-color: #1a237e;
+    border-color: #1a237e;
+    border-radius: 8px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #151b60;
+    border-color: #151b60;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(26, 35, 126, 0.2);
+}
+
+/* Estilos para los iconos en los inputs */
+.input-group-text {
+    background-color: #1a237e;
+    border: none;
+    padding: 0.75rem 1rem;
+}
+
+/* Estilos para el checkbox */
+.form-check-input:checked {
+    background-color: #1a237e;
+    border-color: #1a237e;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card-body {
+    animation: fadeIn 0.6s ease-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 2rem !important;
+    }
+}

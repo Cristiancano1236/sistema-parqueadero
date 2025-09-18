@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ParkSystem - Gestión de Vehículos</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- DataTables CSS -->
+    <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="../css/dashboard.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-container">
+                <div class="logo-circle">
+                    <span class="logo-text">PS</span>
+                </div>
+            </div>
+            <h5 class="mt-3 text-white">ParkSystem</h5>
+        </div>
+        <nav class="sidebar-nav">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="dashboard.html" class="nav-link">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="vehiculos.html" class="nav-link active">
+                        <i class="fas fa-car"></i>
+                        <span>Vehículos</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="ingreso-salida.html" class="nav-link">
+                        <i class="fas fa-right-left"></i>
+                        <span>Ingreso / Salida</span>
+                    </a>
+                </li>
+                <li class="nav-item admin-only">
+                    <a href="configuracion.html" class="nav-link">
+                        <i class="fas fa-gear"></i>
+                        <span>Configuración</span>
+                    </a>
+                </li>
+                <li class="nav-item admin-only">
+                    <a href="tarifas.html" class="nav-link">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <span>Tarifas</span>
+                    </a>
+                </li>
+                <li class="nav-item admin-only">
+                    <a href="usuarios.html" class="nav-link">
+                        <i class="fas fa-users"></i>
+                        <span>Usuarios</span>
+                    </a>
+                </li>
+                <li class="nav-item admin-only">
+                    <a href="reportes.html" class="nav-link">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Reportes</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="#" class="nav-link" id="btnLogout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Cerrar Sesión</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Navigation -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+            <div class="container-fluid">
+                <button class="btn btn-link sidebar-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="navbar-collapse">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-circle"></i>
+                                <span id="userName">Admin</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Perfil</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Configuración</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#" id="logoutDropdown"><i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Content Area -->
+        <div class="container-fluid py-4">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Gestión de Vehículos</h5>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#vehiculoModal">
+                                <i class="fas fa-plus me-2"></i>Nuevo Vehículo
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <!-- Filtros -->
+                            <div class="row mb-4">
+                                <div class="col-md-3">
+                                    <select class="form-select" id="filtroTipo">
+                                        <option value="">Todos los tipos</option>
+                                        <option value="carro">Carros</option>
+                                        <option value="moto">Motos</option>
+                                        <option value="bici">Bicicletas</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="text" class="form-control" id="filtroPlaca" placeholder="Buscar por placa">
+                                </div>
+                            </div>
+
+                            <!-- Tabla de Vehículos -->
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="vehiculosTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Placa</th>
+                                            <th>Tipo</th>
+                                            <th>Color</th>
+                                            <th>Modelo</th>
+                                            <th>Fecha Registro</th>
+                                            <th>Estado</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Los datos se cargarán dinámicamente -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Historial -->
+    <div class="modal fade" id="historialModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Historial del Vehículo <span id="histPlaca"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>#Mov</th>
+                                    <th>Entrada</th>
+                                    <th>Salida</th>
+                                    <th>Estado</th>
+                                    <th>Total</th>
+                                    <th>Pagos</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historialBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Vehículo -->
+    <div class="modal fade" id="vehiculoModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Nuevo Vehículo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="vehiculoForm">
+                        <input type="hidden" id="vehiculoId">
+                        <div class="mb-3">
+                            <label for="placa" class="form-label">Placa</label>
+                            <input type="text" class="form-control" id="placa" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="tipo" class="form-label">Tipo</label>
+                            <select class="form-select" id="tipo" required>
+                                <option value="">Seleccione un tipo</option>
+                                <option value="carro">Carro</option>
+                                <option value="moto">Moto</option>
+                                <option value="bici">Bicicleta</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="color" class="form-label">Color</label>
+                            <input type="text" class="form-control" id="color" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="modelo" class="form-label">Modelo</label>
+                            <input type="text" class="form-control" id="modelo">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnGuardar">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <!-- Footer global (reutilizable). Relacionado con public/js/footer.js -->
+    <script src="../js/footer.js"></script>
+    <script src="../js/vehiculos.js"></script>
+</body>
+</html>

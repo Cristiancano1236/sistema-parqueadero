@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ParkSystem - Ingreso / Salida</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="../css/dashboard.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+        .card { border: none; box-shadow: 0 0 15px rgba(0,0,0,.05); }
+        .receipt { font-size: .95rem; }
+        .receipt h6 { font-weight: 600; }
+        .print-area { background: #fff; }
+        @media print { .no-print { display: none !important; } .print-area { box-shadow: none !important; } }
+    </style>
+    <script>
+        if (!localStorage.getItem('token')) { window.location.href = '/'; }
+    </script>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-container"><div class="logo-circle"><span class="logo-text">PS</span></div></div>
+            <h5 class="mt-3 text-white">ParkSystem</h5>
+        </div>
+        <nav class="sidebar-nav">
+            <ul class="nav flex-column">
+                <li class="nav-item"><a href="dashboard.html" class="nav-link"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a></li>
+                <li class="nav-item"><a href="vehiculos.html" class="nav-link"><i class="fas fa-car"></i><span>Vehículos</span></a></li>
+                <li class="nav-item"><a href="ingreso-salida.html" class="nav-link active"><i class="fas fa-right-left"></i><span>Ingreso / Salida</span></a></li>
+                <li class="nav-item admin-only"><a href="configuracion.html" class="nav-link"><i class="fas fa-gear"></i><span>Configuración</span></a></li>
+            </ul>
+        </nav>
+        <div class="sidebar-footer"><a href="#" class="nav-link" id="btnLogout"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></a></div>
+    </div>
+
+    <div class="main-content">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+            <div class="container-fluid">
+                <button class="btn btn-link sidebar-toggle"><i class="fas fa-bars"></i></button>
+                <div class="navbar-collapse"><ul class="navbar-nav ms-auto"><li class="nav-item"><span class="nav-link"><i class="fas fa-user-circle me-2"></i><span id="userName">Usuario</span></span></li></ul></div>
+            </div>
+        </nav>
+
+        <div class="container-fluid py-4">
+            <div class="row g-4">
+                <!-- Ingreso -->
+                <div class="col-12 col-lg-6">
+                    <div class="card">
+                        <div class="card-header bg-white"><h5 class="mb-0"><i class="fas fa-right-to-bracket me-2 text-success"></i>Ingreso rápido</h5></div>
+                        <div class="card-body">
+                            <form id="formIngreso" class="row g-3">
+                                <div class="col-md-5">
+                                    <label class="form-label">Placa</label>
+                                    <input type="text" id="ingPlaca" class="form-control" placeholder="ABC123" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Tipo</label>
+                                    <select id="ingTipo" class="form-select" required>
+                                        <option value="">Seleccione</option>
+                                        <option value="carro">Carro</option>
+                                        <option value="moto">Moto</option>
+                                        <option value="bici">Bicicleta</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 d-flex align-items-end">
+                                    <button class="btn btn-success w-100" type="submit"><i class="fas fa-play me-2"></i>Ingresar</button>
+                                </div>
+                            </form>
+                            <div id="compIngreso" class="mt-4 d-none print-area">
+                                <h6>Comprobante de Ingreso</h6>
+                                <div class="receipt" id="compIngresoBody"></div>
+                                <div class="no-print mt-2 d-flex gap-2">
+                                    <button class="btn btn-outline-secondary btn-sm" id="btnPrintIngreso58"><i class="fas fa-print me-1"></i>Imprimir 58mm</button>
+                                    <button class="btn btn-outline-secondary btn-sm" id="btnPrintIngreso80"><i class="fas fa-print me-1"></i>Imprimir 80mm</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Salida -->
+                <div class="col-12 col-lg-6">
+                    <div class="card">
+                        <div class="card-header bg-white"><h5 class="mb-0"><i class="fas fa-right-from-bracket me-2 text-danger"></i>Salida y cobro</h5></div>
+                        <div class="card-body">
+                            <form id="formSalida" class="row g-3">
+                                <div class="col-md-5">
+                                    <label class="form-label">Placa</label>
+                                    <input type="text" id="salPlaca" class="form-control" placeholder="ABC123" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Método de pago</label>
+                                    <select id="salMetodo" class="form-select">
+                                        <option value="efectivo">Efectivo</option>
+                                        <option value="tarjeta">Tarjeta</option>
+                                        <option value="QR">QR</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 d-flex align-items-end">
+                                    <button class="btn btn-danger w-100" type="submit"><i class="fas fa-stop me-2"></i>Finalizar</button>
+                                </div>
+                            </form>
+                            <div id="compSalida" class="mt-4 d-none print-area">
+                                <h6>Factura</h6>
+                                <div class="receipt" id="compSalidaBody"></div>
+                                <div class="no-print mt-2 d-flex gap-2">
+                                    <button class="btn btn-outline-secondary btn-sm" id="btnPrintSalida58"><i class="fas fa-print me-1"></i>Imprimir 58mm</button>
+                                    <button class="btn btn-outline-secondary btn-sm" id="btnPrintSalida80"><i class="fas fa-print me-1"></i>Imprimir 80mm</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Pago -->
+    <div class="modal fade" id="pagoModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Registrar Pago</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2"><strong>Total:</strong> <span id="pagoTotal"></span></div>
+                    <div class="mb-3">
+                        <label class="form-label">Agregar medios de pago</label>
+                        <div id="pagosContainer" class="d-flex flex-column gap-2"></div>
+                        <button class="btn btn-outline-primary btn-sm mt-2" id="btnAddPago"><i class="fas fa-plus me-1"></i>Agregar pago</button>
+                    </div>
+                    <div class="alert alert-info py-2">
+                        <div>Pagado: <strong id="pagoSum"></strong></div>
+                        <div>Diferencia: <strong id="pagoDiff"></strong></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success" id="btnConfirmPagos">Confirmar pagos</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Footer global (reutilizable). Relacionado con public/js/footer.js -->
+    <script src="../js/footer.js"></script>
+    <!-- Turnos (modal y gating) -->
+    <script src="../js/turnos.js"></script>
+    <script>
+        const token = localStorage.getItem('token');
+        let empresaInfo = null;
+        let ultimoIngreso = null;
+        let ultimaSalida = null;
+        document.getElementById('userName').textContent = localStorage.getItem('userName') || 'Usuario';
+        document.querySelector('.sidebar-toggle').addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
+        document.getElementById('btnLogout').addEventListener('click',()=>{localStorage.clear(); location.href='/';});
+
+        // Mostrar nombre y ocultar admin-only si no es admin
+        (function(){
+            const role = localStorage.getItem('userRole');
+            if (role !== 'admin') {
+                document.querySelectorAll('.admin-only').forEach(el=> el.classList.add('d-none'));
+            }
+        })();
+
+        // Cargar info empresa para incluir en los comprobantes
+        (async ()=>{
+            try{
+                const r = await fetch('/api/empresa/me',{headers:{'Authorization':`Bearer ${token}`}});
+                const j = await r.json();
+                if(r.ok){ empresaInfo = j.data; }
+                // Cargar configuración (operacion_24h y horarios) para el ticket
+                try{
+                    const cr = await fetch('/api/empresa/config',{headers:{'Authorization':`Bearer ${token}`}});
+                    const cj = await cr.json();
+                    if (cr.ok && cj && cj.data){
+                        empresaInfo.operacion_24h = cj.data.operacion_24h;
+                        empresaInfo.horario_apertura = cj.data.horario_apertura;
+                        empresaInfo.horario_cierre = cj.data.horario_cierre;
+                    }
+                }catch(e){}
+                // Intentar cargar logo BLOB para mostrar en ticket
+                try{
+                    const lr = await fetch('/api/empresa/logo',{headers:{'Authorization':`Bearer ${token}`}});
+                    if (lr.ok){
+                        const blob = await lr.blob();
+                        empresaInfo.logo_url = await new Promise((resolve)=>{
+                            const fr = new FileReader();
+                            fr.onload = ()=> resolve(fr.result);
+                            fr.readAsDataURL(blob);
+                        });
+                    }
+                }catch(e){}
+            }catch(e){ console.warn('No se pudo cargar la empresa', e); }
+        })();
+
+        // Asegurar que la configuración esté cargada antes de renderizar tickets
+        async function ensureEmpresaConfig(){
+            if (!empresaInfo) return;
+            if (typeof empresaInfo.operacion_24h === 'undefined'){
+                try{
+                    const cr = await fetch('/api/empresa/config',{headers:{'Authorization':`Bearer ${token}`}});
+                    const cj = await cr.json();
+                    if (cr.ok && cj && cj.data){
+                        empresaInfo.operacion_24h = cj.data.operacion_24h;
+                        empresaInfo.horario_apertura = cj.data.horario_apertura;
+                        empresaInfo.horario_cierre = cj.data.horario_cierre;
+                    }
+                }catch(e){}
+            }
+        }
+
+        function fmtTime(t){
+            if (!t) return '';
+            const s = String(t);
+            return s.length>=5 ? s.substring(0,5) : s;
+        }
+
+        // Ingreso
+        document.getElementById('formIngreso').addEventListener('submit', async (e)=>{
+            e.preventDefault();
+            await ensureEmpresaConfig();
+            const placa = document.getElementById('ingPlaca').value.trim().toUpperCase();
+            const tipo = document.getElementById('ingTipo').value;
+            const res = await fetch('/api/movimientos/ingreso',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({placa,tipo})});
+            const data = await res.json();
+            if(!res.ok){alert(data.message||'Error');return;}
+            const b = data.data;
+            ultimoIngreso = b;
+            document.getElementById('compIngresoBody').innerHTML = renderComprobante('INGRESO', b, null, empresaInfo);
+            document.getElementById('compIngreso').classList.remove('d-none');
+            document.getElementById('formIngreso').reset();
+        });
+
+        // Salida
+        document.getElementById('formSalida').addEventListener('submit', async (e)=>{
+            e.preventDefault();
+            await ensureEmpresaConfig();
+            const placa = document.getElementById('salPlaca').value.trim().toUpperCase();
+            const metodoPref = document.getElementById('salMetodo').value;
+            const res = await fetch('/api/movimientos/salida',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({placa})});
+            const data = await res.json();
+            if(!res.ok){alert(data.message||'Error');return;}
+            const f = data.data;
+            ultimaSalida = f;
+            document.getElementById('compSalidaBody').innerHTML = renderComprobante('SALIDA', null, f, empresaInfo);
+            document.getElementById('compSalida').classList.remove('d-none');
+            document.getElementById('formSalida').reset();
+
+            // Abrir modal de pago avanzado con método por defecto
+            abrirModalPago(f, metodoPref);
+        });
+
+        // Botones de impresión dedicados con tamaños 58/80mm y QR
+        document.getElementById('btnPrintIngreso58').addEventListener('click', ()=>{
+            const qr = JSON.stringify({t:'ingreso', e:empresaInfo?.nit, m:ultimoIngreso?.movimientoId, p:ultimoIngreso?.placa, fe:ultimoIngreso?.fechaEntrada});
+            imprimirHTML(document.getElementById('compIngresoBody').innerHTML, 'Comprobante de Ingreso', 58, qr);
+        });
+        document.getElementById('btnPrintIngreso80').addEventListener('click', ()=>{
+            const qr = JSON.stringify({t:'ingreso', e:empresaInfo?.nit, m:ultimoIngreso?.movimientoId, p:ultimoIngreso?.placa, fe:ultimoIngreso?.fechaEntrada});
+            imprimirHTML(document.getElementById('compIngresoBody').innerHTML, 'Comprobante de Ingreso', 80, qr);
+        });
+        document.getElementById('btnPrintSalida58').addEventListener('click', ()=>{
+            const qr = JSON.stringify({t:'salida', e:empresaInfo?.nit, m:ultimaSalida?.movimientoId, p:ultimaSalida?.placa, fs:ultimaSalida?.fechaSalida, total:ultimaSalida?.total});
+            imprimirHTML(document.getElementById('compSalidaBody').innerHTML, 'Factura de Salida', 58, qr);
+        });
+        document.getElementById('btnPrintSalida80').addEventListener('click', ()=>{
+            const qr = JSON.stringify({t:'salida', e:empresaInfo?.nit, m:ultimaSalida?.movimientoId, p:ultimaSalida?.placa, fs:ultimaSalida?.fechaSalida, total:ultimaSalida?.total});
+            imprimirHTML(document.getElementById('compSalidaBody').innerHTML, 'Factura de Salida', 80, qr);
+        });
+
+        // Render de comprobante/factura compacto tipo ticket
+        function renderComprobante(tipo, ingreso, salida, empresa){
+            const e = empresa || {};
+            const header = `
+                <div style="text-align:center">
+                    ${e.logo_url ? `<img src="${e.logo_url}" alt="logo" style="max-height:60px">` : ''}
+                    <div><strong>${e.nombre||'Empresa'}</strong></div>
+                    <div>NIT: ${e.nit||''}</div>
+                    <div>${e.direccion||''} ${e.telefono? ' - '+e.telefono:''}</div>
+                    <div>Horario: <strong>${(empresa?.operacion_24h)?'24 horas':((fmtTime(empresa?.horario_apertura)||'')+' - '+(fmtTime(empresa?.horario_cierre)||''))}</strong></div>
+                    <hr/>
+                    <div><strong>${tipo}</strong></div>
+                </div>`;
+
+            // Pie de ticket con crédito y enlace/ícono de YouTube de Ciscode
+            const ciscodeFooter = `
+                <hr/>
+                <div style="text-align:center;margin-top:6px">
+                    <div>Desarrollado por <strong>Ciscode</strong></div>
+                    <div>
+                        <a href="https://ciscode.co" target="_blank" style="text-decoration:none;color:#000">ciscode.co</a>
+                        &nbsp;|&nbsp;
+                        <a href="https://www.youtube.com/@Ciscode" target="_blank" aria-label="YouTube Ciscode" style="display:inline-flex;align-items:center;gap:4px;text-decoration:none;color:#000">
+                            <span>
+                                <svg width="18" height="12" viewBox="0 0 24 17" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path d="M23.5 2.6a3 3 0 0 0-2.1-2.1C19.5 0 12 0 12 0s-7.5 0-9.4.5A3 3 0 0 0 .5 2.6 31 31 0 0 0 0 8.5a31 31 0 0 0 .5 5.9 3 3 0 0 0 2.1 2.1C4.5 17 12 17 12 17s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1 31 31 0 0 0 .5-5.9 31 31 0 0 0-.5-5.9z" fill="#FF0000"/>
+                                    <path d="M9.75 12.25V4.75L15.5 8.5l-5.75 3.75z" fill="#fff"/>
+                                </svg>
+                            </span>
+                            <span style="font-size:10px">YouTube</span>
+                        </a>
+                    </div>
+                </div>`;
+
+            if (tipo === 'INGRESO') {
+                // Código de barras (placa)
+                const barcode = `<div style="text-align:center;margin-top:6px"><svg id="barcodeSvg"></svg><div style="font-size:12px">${ingreso.placa}</div></div>`;
+                return `${header}
+                    <div>Movimiento: <strong>#${ingreso.movimientoId}</strong></div>
+                    <div>Placa: <strong>${ingreso.placa}</strong></div>
+                    <div>Tipo: <strong>${ingreso.tipo}</strong></div>
+                    <div>Entrada: <strong>${new Date(ingreso.fechaEntrada).toLocaleString('es-CO')}</strong></div>
+                    <hr/>
+                    <div>Tarifas</div>
+                    <div>Minuto: <strong>${ingreso.tarifa.valor_minuto}</strong></div>
+                    <div>Hora: <strong>${ingreso.tarifa.valor_hora}</strong></div>
+                    <div>Día: <strong>${ingreso.tarifa.valor_dia_completo}</strong></div>
+                    <hr/>
+                    <div>Atendido por: ${localStorage.getItem('userName')||''}</div>
+                    <div>Fecha impresión: ${new Date().toLocaleString('es-CO')}</div>
+                    ${barcode}
+                    ${ciscodeFooter}`;
+            }
+
+            // Mostrar detalle de pagos si viene en salida.pagosList
+            const pagosHtml = (salida.pagosList && salida.pagosList.length)
+                ? `<div><strong>Pagos</strong></div>` + salida.pagosList.map(p=>`<div>${p.metodo_pago}: <strong>${new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',minimumFractionDigits:0}).format(p.monto)}</strong></div>`).join('')
+                : '';
+            return `${header}
+                <div>Movimiento: <strong>#${salida.movimientoId}</strong></div>
+                <div>Placa: <strong>${salida.placa}</strong></div>
+                <div>Tipo: <strong>${salida.tipo}</strong></div>
+                <div>Entrada: <strong>${new Date(salida.fechaEntrada).toLocaleString('es-CO')}</strong></div>
+                <div>Salida: <strong>${new Date(salida.fechaSalida).toLocaleString('es-CO')}</strong></div>
+                <div>Tiempo: <strong>${salida.detalleTiempo.dias}d ${salida.detalleTiempo.horas}h ${salida.detalleTiempo.minutos}m</strong></div>
+                <hr/>
+                <div>Tarifas</div>
+                <div>Minuto: <strong>${salida.tarifa.valor_minuto}</strong></div>
+                <div>Hora: <strong>${salida.tarifa.valor_hora}</strong></div>
+                <div>Día: <strong>${salida.tarifa.valor_dia_completo}</strong></div>
+                <hr/>
+                <div>Total a pagar: <strong>$${new Intl.NumberFormat('es-CO').format(salida.total)}</strong></div>
+                ${pagosHtml}
+                <div>Atendido por: ${localStorage.getItem('userName')||''}</div>
+                <div>Fecha impresión: ${new Date().toLocaleString('es-CO')}</div>
+                ${ciscodeFooter}`;
+        }
+
+        // Abrir ventana de impresión con solo el ticket
+        function imprimirHTML(html, titulo, anchoMM, qrPayload){
+            const width = anchoMM || 58; // 58 o 80
+            const w = window.open('', '_blank', 'width=420,height=700');
+            const payload = encodeURIComponent(JSON.stringify(qrPayload || {}));
+            const doc = `<!DOCTYPE html><html><head><meta charset="utf-8" /><title>${titulo}</title>
+                <style>
+                    @page{ size: ${width}mm auto; margin: 3mm }
+                    body{ width:${width}mm; font-family: Arial, sans-serif; font-size:11px; margin:0 }
+                    .wrap{ padding:4mm }
+                    hr{ border:none; border-top:1px dashed #999; margin:6px 0 }
+                    img{ display:block; margin:0 auto 6px; max-width:100% }
+                    .qr{ display:flex; justify-content:center; margin-top:6px }
+                    .barcode{ display:flex; justify-content:center; margin-top:6px }
+                </style>
+            </head><body><div class="wrap">${html}<div class="qr"><div id="qrcode"></div></div></div>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
+            <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
+            <script>(function(){
+                var ciscodeUrl = 'https://ciscodedev.netlify.app/';
+                try{
+                    // Parse payload (JSON) sólo para código de barras (placa)
+                    var raw = JSON.parse(decodeURIComponent('${payload}'));
+                    var payload = (typeof raw === 'string') ? JSON.parse(raw) : raw;
+                    // QR siempre apunta al sitio de Ciscode
+                    new QRCode(document.getElementById('qrcode'), {text: ciscodeUrl, width:96, height:96});
+                    // Render barcode si existe elemento
+                    var svg = document.getElementById('barcodeSvg');
+                    if (svg) { JsBarcode(svg, (payload && (payload.p || payload.placa)) || '', {format:'code128', displayValue:false, height:40}); }
+                }catch(e){
+                    // Fallback mínimo: QR con URL aunque falle el payload
+                    try { new QRCode(document.getElementById('qrcode'), {text: ciscodeUrl, width:96, height:96}); } catch(_e){}
+                }
+                setTimeout(function(){ window.print(); window.close(); }, 400);
+            })();<\/script>
+            </body></html>`;
+            w.document.write(doc);
+            w.document.close();
+            w.focus();
+        }
+
+        // Modal de pago avanzado
+        function abrirModalPago(factura, metodoPorDefecto){
+            const modalEl = document.getElementById('pagoModal');
+            document.getElementById('pagoTotal').textContent = new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',minimumFractionDigits:0}).format(factura.total);
+            const cont = document.getElementById('pagosContainer');
+            cont.innerHTML = '';
+            const btnConfirm = document.getElementById('btnConfirmPagos');
+            const addRow = (metodo='efectivo', monto='') => {
+                const row = document.createElement('div');
+                row.className = 'd-flex gap-2';
+                row.innerHTML = `
+                    <select class="form-select form-select-sm metodo" style="max-width:140px">
+                        <option value="efectivo" ${metodo==='efectivo'?'selected':''}>Efectivo</option>
+                        <option value="tarjeta" ${metodo==='tarjeta'?'selected':''}>Tarjeta</option>
+                        <option value="QR" ${metodo==='QR'?'selected':''}>QR</option>
+                    </select>
+                    <input type="number" class="form-control form-control-sm monto" min="0" step="0.01" placeholder="Monto" value="${monto}">
+                    <button class="btn btn-outline-danger btn-sm btnDel">&times;</button>
+                `;
+                row.querySelector('.btnDel').addEventListener('click', ()=>{ row.remove(); calc();});
+                row.querySelector('.monto').addEventListener('input', calc);
+                cont.appendChild(row);
+            };
+            const calc = ()=>{
+                const montos = Array.from(cont.querySelectorAll('.monto')).map(i=>Number(i.value||0));
+                const sum = montos.reduce((a,b)=>a+b,0);
+                document.getElementById('pagoSum').textContent = new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',minimumFractionDigits:0}).format(sum);
+                const diff = sum - factura.total;
+                const sign = diff>=0? 'Vuelto: ' : 'Falta: ';
+                const diffEl = document.getElementById('pagoDiff');
+                diffEl.textContent = sign + new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',minimumFractionDigits:0}).format(Math.abs(diff));
+                diffEl.className = diff>=0 ? 'text-success' : 'text-danger';
+                btnConfirm.disabled = (sum + 0.0001) < factura.total; // deshabilitar si no está totalmente pago
+            };
+            document.getElementById('btnAddPago').onclick = ()=>{ addRow('efectivo',''); };
+            addRow(metodoPorDefecto || 'efectivo', factura.total);
+            calc();
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+
+            btnConfirm.onclick = async ()=>{
+                const rows = Array.from(cont.querySelectorAll('.d-flex'));
+                const pagos = rows.map(r=>({
+                    metodo_pago: r.querySelector('.metodo').value,
+                    monto: Number(r.querySelector('.monto').value||0)
+                })).filter(p=>p.monto>0);
+                const totalPagado = pagos.reduce((a,b)=>a + Number(b.monto||0), 0);
+                if ((totalPagado + 0.0001) < factura.total) {
+                    alert('Falta valor por pagar. Completa el pago para finalizar.');
+                    return;
+                }
+                try{
+                    const res = await fetch('/api/pagos/bulk',{
+                        method:'POST',
+                        headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+                        body: JSON.stringify({ id_movimiento: factura.movimientoId, pagos })
+                    });
+                    const j = await res.json();
+                    if(!res.ok) throw new Error(j.message||'Error registrando pagos');
+                    // Reimprimir ticket con detalle de pagos
+                    const facturaConPagos = Object.assign({}, factura, { pagosList: pagos });
+                    const htmlTicket = renderComprobante('SALIDA', null, facturaConPagos, empresaInfo);
+                    imprimirHTML(htmlTicket, 'Factura de Salida', 80, { t:'salida', e:empresaInfo?.nit, m:factura.movimientoId, p:factura.placa, fs:factura.fechaSalida, total: factura.total });
+                    // Persistir la información de pagos en la vista para futuras reimpresiones
+                    ultimaSalida = facturaConPagos;
+                    document.getElementById('compSalidaBody').innerHTML = htmlTicket;
+                    modal.hide();
+                }catch(err){
+                    alert('Error: '+err.message);
+                }
+            };
+        }
+    </script>
+</body>
+</html>
+

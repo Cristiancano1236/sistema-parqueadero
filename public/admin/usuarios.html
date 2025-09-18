@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ParkSystem - Usuarios</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="../css/dashboard.css" rel="stylesheet">
+    <script>
+        // Redirección por autenticación y rol admin (frontend guard)
+        if (!localStorage.getItem('token')) { window.location.href = '/'; }
+        if (localStorage.getItem('userRole') !== 'admin') { window.location.href = '/admin/dashboard'; }
+    </script>
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+        .card { border: none; box-shadow: 0 0 15px rgba(0,0,0,.05); }
+    </style>
+    <script>
+        // Marcar elementos de menú admin-only si se necesitara condicional
+        document.addEventListener('DOMContentLoaded', ()=>{
+            const role = localStorage.getItem('userRole');
+            if (role !== 'admin') {
+                document.querySelectorAll('.admin-only').forEach(el=> el.classList.add('d-none'));
+            }
+        });
+    </script>
+    <script>
+        // Si no existe ruta en server para esta vista, navegar manualmente
+    </script>
+    <script>
+        // Nada adicional aquí; la lógica se carga desde ../js/usuarios.js
+    </script>
+    <script>
+        // Evitar FOUC de sidebar
+    </script>
+    <script>
+        // Fin de cabecera
+    </script>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-container"><div class="logo-circle"><span class="logo-text">PS</span></div></div>
+            <h5 class="mt-3 text-white">ParkSystem</h5>
+        </div>
+        <nav class="sidebar-nav">
+            <ul class="nav flex-column">
+                <li class="nav-item"><a href="dashboard.html" class="nav-link"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a></li>
+                <li class="nav-item"><a href="vehiculos.html" class="nav-link"><i class="fas fa-car"></i><span>Vehículos</span></a></li>
+                <li class="nav-item"><a href="ingreso-salida.html" class="nav-link"><i class="fas fa-right-left"></i><span>Ingreso / Salida</span></a></li>
+                <li class="nav-item admin-only"><a href="configuracion.html" class="nav-link"><i class="fas fa-gear"></i><span>Configuración</span></a></li>
+                <li class="nav-item admin-only"><a href="tarifas.html" class="nav-link"><i class="fas fa-money-bill-wave"></i><span>Tarifas</span></a></li>
+                <li class="nav-item admin-only"><a href="usuarios.html" class="nav-link active"><i class="fas fa-users"></i><span>Usuarios</span></a></li>
+                <li class="nav-item admin-only"><a href="reportes.html" class="nav-link"><i class="fas fa-chart-bar"></i><span>Reportes</span></a></li>
+            </ul>
+        </nav>
+        <div class="sidebar-footer"><a href="#" class="nav-link" id="btnLogout"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></a></div>
+    </div>
+
+    <div class="main-content">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+            <div class="container-fluid">
+                <button class="btn btn-link sidebar-toggle"><i class="fas fa-bars"></i></button>
+                <div class="navbar-collapse"><ul class="navbar-nav ms-auto"><li class="nav-item"><span class="nav-link"><i class="fas fa-user-circle me-2"></i><span id="userName">Usuario</span></span></li></ul></div>
+            </div>
+        </nav>
+
+        <div class="container-fluid py-4">
+            <div class="card">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Gestión de Usuarios</h5>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#usuarioModal">
+                        <i class="fas fa-user-plus me-2"></i>Nuevo Usuario
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="usuariosTable">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Usuario</th>
+                                    <th>Rol</th>
+                                    <th>Activo</th>
+                                    <th>Último acceso</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Usuario -->
+    <div class="modal fade" id="usuarioModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="usuarioModalTitle">Nuevo Usuario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="usuarioForm">
+                        <input type="hidden" id="usuarioId">
+                        <div class="mb-3">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" id="nombre" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Usuario</label>
+                            <input type="text" id="usuario_login" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Contraseña</label>
+                            <input type="password" id="contraseña" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Rol</label>
+                            <select id="rol" class="form-select" required>
+                                <option value="admin">Administrador</option>
+                                <option value="operador">Operador</option>
+                            </select>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="activo" checked>
+                            <label class="form-check-label" for="activo">Activo</label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnGuardarUsuario">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Cambio de Clave (solo admin) -->
+    <div class="modal fade" id="passwordModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Cambiar contraseña</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Form de cambio de clave. Relacionado con public/js/usuarios.js (función cambiarClave) y endpoint PUT /api/usuarios/:id -->
+                    <form id="passwordForm">
+                        <input type="hidden" id="pwd_user_id">
+                        <div class="mb-3">
+                            <label class="form-label">Usuario</label>
+                            <input type="text" id="pwd_user_login" class="form-control" disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nueva contraseña</label>
+                            <div class="input-group">
+                                <input type="password" id="pwd_new" class="form-control" required>
+                                <button class="btn btn-outline-secondary" type="button" id="pwd_toggle"><i class="fas fa-eye"></i></button>
+                            </div>
+                            <div class="form-text">Mínimo 6 caracteres.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Confirmar contraseña</label>
+                            <input type="password" id="pwd_confirm" class="form-control" required>
+                        </div>
+                        <div class="alert d-none" id="pwd_alert"></div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnPwdSave">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="position-fixed top-0 end-0 p-3" style="z-index:1100">
+        <div id="toastContainer"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Footer global (reutilizable). Relacionado con public/js/footer.js -->
+    <script src="../js/footer.js"></script>
+    <script src="../js/usuarios.js"></script>
+</body>
+</html>
+
+

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ParkSystem - Reportes</title>
+    <!-- Bootstrap 5.3 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS compartido con dashboard -->
+    <link href="../css/dashboard.css" rel="stylesheet">
+    <script>
+        // Guard simple: requiere token y rol admin u operador (acceso, pero algunos componentes visibles solo admin)
+        if (!localStorage.getItem('token')) { window.location.href = '/'; }
+    </script>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-container"><div class="logo-circle"><span class="logo-text">PS</span></div></div>
+            <h5 class="mt-3 text-white">ParkSystem</h5>
+        </div>
+        <nav class="sidebar-nav">
+            <ul class="nav flex-column">
+                <li class="nav-item"><a href="dashboard.html" class="nav-link"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a></li>
+                <li class="nav-item"><a href="vehiculos.html" class="nav-link"><i class="fas fa-car"></i><span>Vehículos</span></a></li>
+                <li class="nav-item"><a href="ingreso-salida.html" class="nav-link"><i class="fas fa-right-left"></i><span>Ingreso / Salida</span></a></li>
+                <li class="nav-item admin-only"><a href="configuracion.html" class="nav-link"><i class="fas fa-gear"></i><span>Configuración</span></a></li>
+                <li class="nav-item admin-only"><a href="tarifas.html" class="nav-link"><i class="fas fa-money-bill-wave"></i><span>Tarifas</span></a></li>
+                <li class="nav-item admin-only"><a href="usuarios.html" class="nav-link"><i class="fas fa-users"></i><span>Usuarios</span></a></li>
+                <li class="nav-item admin-only"><a href="reportes.html" class="nav-link active"><i class="fas fa-chart-bar"></i><span>Reportes</span></a></li>
+            </ul>
+        </nav>
+        <div class="sidebar-footer"><a href="#" class="nav-link" id="btnLogout"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></a></div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+            <div class="container-fluid">
+                <button class="btn btn-link sidebar-toggle"><i class="fas fa-bars"></i></button>
+                <div class="navbar-collapse"><ul class="navbar-nav ms-auto"><li class="nav-item"><span class="nav-link"><i class="fas fa-user-circle me-2"></i><span id="userName">Usuario</span></span></li></ul></div>
+            </div>
+        </nav>
+
+        <div class="container-fluid py-4">
+            <!-- Filtros -->
+            <div class="card mb-4">
+                <div class="card-header bg-white d-flex flex-wrap gap-2 align-items-center justify-content-between">
+                    <h5 class="mb-0">Filtros de Reporte</h5>
+                    <div class="d-flex flex-wrap gap-2">
+                        <input type="date" id="fDesde" class="form-control" aria-label="Desde">
+                        <input type="date" id="fHasta" class="form-control" aria-label="Hasta">
+                        <select id="fTipo" class="form-select">
+                            <option value="">Todos los tipos</option>
+                            <option value="carro">Carro</option>
+                            <option value="moto">Moto</option>
+                            <option value="bici">Bicicleta</option>
+                        </select>
+                        <select id="fEstado" class="form-select">
+                            <option value="">Todos los estados</option>
+                            <option value="activo">Activos</option>
+                            <option value="finalizado">Finalizados</option>
+                        </select>
+                        <input type="text" id="fPlaca" class="form-control" placeholder="Placa">
+                        <button class="btn btn-primary" id="btnAplicar"><i class="fas fa-filter me-2"></i>Aplicar</button>
+                        <button class="btn btn-outline-secondary" id="btnHoy"><i class="fas fa-calendar-day me-2"></i>Hoy</button>
+                        <button class="btn btn-outline-secondary" id="btnUltimos7"><i class="fas fa-calendar-week me-2"></i>Últimos 7</button>
+                        <button class="btn btn-outline-secondary" id="btnMes"><i class="fas fa-calendar me-2"></i>Este mes</button>
+                        <button class="btn btn-success" id="btnExport"><i class="fas fa-file-pdf me-2"></i>Exportar PDF</button>
+                        <button class="btn btn-outline-success" id="btnExportXlsx"><i class="fas fa-file-excel me-2"></i>Exportar Excel</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPIs -->
+            <div class="row g-4 mb-4">
+                <div class="col-12 col-md-6 col-xl-3">
+                    <div class="card stat-card"><div class="card-body d-flex align-items-center"><div class="stat-icon bg-success"><i class="fas fa-money-bill-wave"></i></div><div class="ms-3"><small>Ingresos</small><div id="kpiIngresos" class="fw-bold fs-4">$0</div></div></div></div>
+                </div>
+                <div class="col-12 col-md-6 col-xl-3">
+                    <div class="card stat-card"><div class="card-body d-flex align-items-center"><div class="stat-icon bg-primary"><i class="fas fa-receipt"></i></div><div class="ms-3"><small>Tickets</small><div id="kpiTickets" class="fw-bold fs-4">0</div></div></div></div>
+                </div>
+                <div class="col-12 col-md-6 col-xl-3">
+                    <div class="card stat-card"><div class="card-body d-flex align-items-center"><div class="stat-icon bg-info"><i class="fas fa-calculator"></i></div><div class="ms-3"><small>Promedio Ticket</small><div id="kpiPromedio" class="fw-bold fs-4">$0</div></div></div></div>
+                </div>
+                <div class="col-12 col-md-6 col-xl-3">
+                    <div class="card stat-card"><div class="card-body d-flex align-items-center"><div class="stat-icon bg-warning"><i class="fas fa-parking"></i></div><div class="ms-3"><small>Ocupación</small><div id="kpiOcupacion" class="fw-bold fs-4">0%</div></div></div></div>
+                </div>
+            </div>
+
+            <!-- Gráficos -->
+            <div class="row g-4 mb-4">
+                <div class="col-12 col-xl-8">
+                    <div class="card"><div class="card-header bg-white d-flex justify-content-between align-items-center"><h5 class="mb-0">Ingresos por día</h5><select id="fMetodo" class="form-select form-select-sm" style="max-width:200px"><option value="">Todos los métodos</option><option value="efectivo">Efectivo</option><option value="tarjeta">Tarjeta</option><option value="QR">QR</option></select></div><div class="card-body"><canvas id="chartIngresos" height="110"></canvas></div></div>
+                </div>
+                <div class="col-12 col-xl-4">
+                    <div class="card"><div class="card-header bg-white"><h5 class="mb-0">Ingresos por método</h5></div><div class="card-body"><canvas id="chartMetodo" height="180"></canvas></div></div>
+                </div>
+            </div>
+
+            <!-- Tabla de Movimientos -->
+            <div class="card">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Movimientos</h5>
+                    <div class="small text-muted" id="movPaging"></div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm">
+                            <thead>
+                                <tr>
+                                    <th>#Mov</th>
+                                    <th>Placa</th>
+                                    <th>Tipo</th>
+                                    <th>Entrada</th>
+                                    <th>Salida</th>
+                                    <th>Estado</th>
+                                    <th>Total</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbMov"></tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                        <button class="btn btn-outline-secondary btn-sm" id="btnPrev">Anterior</button>
+                        <span class="small text-muted" id="pageInfo">Página 1</span>
+                        <button class="btn btn-outline-primary btn-sm" id="btnNext">Siguiente</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top placas -->
+            <div class="card mt-4">
+                <div class="card-header bg-white"><h5 class="mb-0">Top Placas</h5></div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead><tr><th>Placa</th><th>Tipo</th><th>Visitas</th><th>Total</th></tr></thead>
+                            <tbody id="tbTop"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Toasts -->
+    <div class="position-fixed top-0 end-0 p-3" style="z-index:1100"><div id="toastContainer"></div></div>
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- jsPDF + AutoTable para exportación PDF con diseño -->
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.1/dist/jspdf.plugin.autotable.min.js"></script>
+    <!-- SheetJS (XLSX) para exportación Excel real con columnas -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js"></script>
+    <!-- Footer global (reutilizable). Relacionado con public/js/footer.js -->
+    <script src="../js/footer.js"></script>
+    <script src="../js/reportes.js"></script>
+</body>
+</html>
+
+

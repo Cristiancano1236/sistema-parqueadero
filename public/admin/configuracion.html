@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ParkSystem - Configuración</title>
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="../css/dashboard.css" rel="stylesheet">
+    <script>
+        // Guard: requiere token y rol admin
+        if (!localStorage.getItem('token')) { window.location.href = '/'; }
+        if (localStorage.getItem('userRole') !== 'admin') { window.location.href = '/admin/dashboard'; }
+    </script>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-container"><div class="logo-circle"><span class="logo-text">PS</span></div></div>
+            <h5 class="mt-3 text-white">ParkSystem</h5>
+        </div>
+        <nav class="sidebar-nav">
+            <ul class="nav flex-column">
+                <li class="nav-item"><a href="dashboard.html" class="nav-link"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a></li>
+                <li class="nav-item"><a href="vehiculos.html" class="nav-link"><i class="fas fa-car"></i><span>Vehículos</span></a></li>
+                <li class="nav-item"><a href="ingreso-salida.html" class="nav-link"><i class="fas fa-right-left"></i><span>Ingreso / Salida</span></a></li>
+                <li class="nav-item admin-only"><a href="configuracion.html" class="nav-link active"><i class="fas fa-gear"></i><span>Configuración</span></a></li>
+                <li class="nav-item admin-only"><a href="tarifas.html" class="nav-link"><i class="fas fa-money-bill-wave"></i><span>Tarifas</span></a></li>
+                <li class="nav-item admin-only"><a href="usuarios.html" class="nav-link"><i class="fas fa-users"></i><span>Usuarios</span></a></li>
+                <li class="nav-item admin-only"><a href="reportes.html" class="nav-link"><i class="fas fa-chart-bar"></i><span>Reportes</span></a></li>
+            </ul>
+        </nav>
+        <div class="sidebar-footer"><a href="#" class="nav-link" id="btnLogout"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></a></div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+            <div class="container-fluid">
+                <button class="btn btn-link sidebar-toggle"><i class="fas fa-bars"></i></button>
+                <div class="navbar-collapse"><ul class="navbar-nav ms-auto"><li class="nav-item"><span class="nav-link"><i class="fas fa-user-circle me-2"></i><span id="userName">Usuario</span></span></li></ul></div>
+            </div>
+        </nav>
+
+        <div class="container-fluid py-4">
+            <div class="row g-4">
+                <!-- Datos de Empresa -->
+                <div class="col-12 col-xl-6">
+                    <div class="card">
+                        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-building me-2"></i>Datos de la Empresa</h5>
+                            <button class="btn btn-primary btn-sm" id="btnSaveEmpresa"><i class="fas fa-save me-1"></i>Guardar</button>
+                        </div>
+                        <div class="card-body">
+                            <form id="formEmpresa" class="row g-3">
+                                <div class="col-md-8">
+                                    <label class="form-label">Nombre</label>
+                                    <input type="text" id="e_nombre" class="form-control" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">NIT</label>
+                                    <input type="text" id="e_nit" class="form-control" required>
+                                </div>
+                                <div class="col-md-8">
+                                    <label class="form-label">Dirección</label>
+                                    <input type="text" id="e_direccion" class="form-control">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Teléfono</label>
+                                    <input type="text" id="e_telefono" class="form-control">
+                                </div>
+                                <div class="col-md-8">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" id="e_email" class="form-control">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Logo</label>
+                                    <input type="file" id="e_logo_file" class="form-control" accept="image/*">
+                                    <div class="mt-2">
+                                        <img id="e_logo_preview" src="" alt="Vista previa" class="img-fluid rounded border d-none" style="max-height:80px">
+                                    </div>
+                                    <button type="button" id="btnUploadLogo" class="btn btn-outline-secondary btn-sm mt-2"><i class="fas fa-upload me-1"></i>Subir</button>
+                                </div>
+                                <div class="col-12">
+                                    <div id="alertEmpresa" class="alert d-none" role="alert"></div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configuración -->
+                <div class="col-12 col-xl-6">
+                    <div class="card">
+                        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-sliders me-2"></i>Configuración</h5>
+                            <button class="btn btn-primary btn-sm" id="btnSaveConfig"><i class="fas fa-save me-1"></i>Guardar</button>
+                        </div>
+                        <div class="card-body">
+                            <form id="formConfig" class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">Cap. Carros</label>
+                                    <input type="number" min="0" id="c_carros" class="form-control" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Cap. Motos</label>
+                                    <input type="number" min="0" id="c_motos" class="form-control" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Cap. Bicis</label>
+                                    <input type="number" min="0" id="c_bicis" class="form-control" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Apertura</label>
+                                    <input type="time" id="c_apertura" class="form-control" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Cierre</label>
+                                    <input type="time" id="c_cierre" class="form-control" required>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="c_24h">
+                                        <label class="form-check-label" for="c_24h">Abierto 24 horas</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">IVA (%)</label>
+                                    <input type="number" step="0.01" min="0" id="c_iva" class="form-control" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Moneda</label>
+                                    <input type="text" id="c_moneda" class="form-control" value="COP" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Zona horaria</label>
+                                    <input type="text" id="c_tz" class="form-control" value="America/Bogota" required>
+                                </div>
+                                <div class="col-12">
+                                    <div id="alertConfig" class="alert d-none" role="alert"></div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="position-fixed top-0 end-0 p-3" style="z-index:1100"><div id="toastContainer"></div></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Footer global (reutilizable). Relacionado con public/js/footer.js -->
+    <script src="../js/footer.js"></script>
+    <script src="../js/configuracion.js"></script>
+</body>
+</html>
+
+

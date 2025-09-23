@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../config/db');
 const verifyToken = require('../middleware/auth');
+const { sanitizeIdParam } = require('../utils/sanitize');
 
 // Middleware para verificar si el vehículo pertenece a la empresa del usuario
 async function verificarPropiedadVehiculo(req, res, next) {
@@ -59,7 +60,7 @@ router.get('/', verifyToken, async (req, res) => {
 });
 
 // Obtener un vehículo específico
-router.get('/:id', verifyToken, verificarPropiedadVehiculo, async (req, res) => {
+router.get('/:id', verifyToken, sanitizeIdParam('id'), verificarPropiedadVehiculo, async (req, res) => {
     try {
         const [vehiculos] = await pool.query(
             'SELECT * FROM vehiculos WHERE id_vehiculo = ? AND id_empresa = ?',
@@ -77,7 +78,7 @@ router.get('/:id', verifyToken, verificarPropiedadVehiculo, async (req, res) => 
 });
 
 // Historial de movimientos de un vehículo
-router.get('/:id/historial', verifyToken, verificarPropiedadVehiculo, async (req, res) => {
+router.get('/:id/historial', verifyToken, sanitizeIdParam('id'), verificarPropiedadVehiculo, async (req, res) => {
     try {
         const [rows] = await pool.query(
             `SELECT 
@@ -144,7 +145,7 @@ router.post('/', verifyToken, async (req, res) => {
 });
 
 // Actualizar vehículo
-router.put('/:id', verifyToken, verificarPropiedadVehiculo, async (req, res) => {
+router.put('/:id', verifyToken, sanitizeIdParam('id'), verificarPropiedadVehiculo, async (req, res) => {
     try {
         const { placa, tipo, color, modelo } = req.body;
 
@@ -183,7 +184,7 @@ router.put('/:id', verifyToken, verificarPropiedadVehiculo, async (req, res) => 
 });
 
 // Eliminar vehículo
-router.delete('/:id', verifyToken, verificarPropiedadVehiculo, async (req, res) => {
+router.delete('/:id', verifyToken, sanitizeIdParam('id'), verificarPropiedadVehiculo, async (req, res) => {
     try {
         // Verificar si el vehículo tiene movimientos activos
         const [movimientos] = await pool.query(

@@ -38,7 +38,10 @@ const checkFailedAttempts = async (id_empresa, usuario, ip) => {
 };
 
 router.post('/login', validateLoginData, async (req, res) => {
-    const { empresa, usuario, password } = req.body;
+    // Normalización de entradas para evitar problemas de espacios/caso
+    const empresa = typeof req.body.empresa === 'string' ? req.body.empresa.trim() : req.body.empresa;
+    const usuario = typeof req.body.usuario === 'string' ? req.body.usuario.trim() : req.body.usuario;
+    const password = req.body.password;
     const ip = req.ip || req.connection.remoteAddress;
 
     try {

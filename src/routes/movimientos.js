@@ -228,7 +228,8 @@ router.post('/salida', verifyToken, async (req, res) => {
 module.exports = router;
 
 // Detalle por id_movimiento (para dashboard)
-router.get('/detalle/:id', verifyToken, async (req, res) => {
+const { sanitizeIdParam } = require('../utils/sanitize');
+router.get('/detalle/:id', verifyToken, sanitizeIdParam('id'), async (req, res) => {
     try {
         const [rows] = await pool.query(
             `SELECT m.*, v.placa, v.tipo 
@@ -246,10 +247,9 @@ router.get('/detalle/:id', verifyToken, async (req, res) => {
 });
 
 // Factura completa para reimpresión (incluye tarifa usada, tiempos y pagos)
-router.get('/factura/:id', verifyToken, async (req, res) => {
+router.get('/factura/:id', verifyToken, sanitizeIdParam('id'), async (req, res) => {
     try {
-        const idMov = Number(req.params.id);
-        if (!idMov) return res.status(400).json({ success:false, message:'id inválido' });
+        const idMov = req.params.id;
         const [rows] = await pool.query(
             `SELECT m.*, v.placa, v.tipo, t.valor_minuto, t.valor_hora, t.valor_dia_completo
              FROM movimientos m

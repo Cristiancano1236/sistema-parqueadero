@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../config/db');
 const auth = require('../middleware/auth');
+const { sanitizeIdParam } = require('../utils/sanitize');
 
 // Middleware de autenticación
 router.use(auth);
@@ -129,10 +130,10 @@ router.post('/cerrar', async (req, res) => {
 });
 
 // Detalle de turno + totales del sistema para reimpresión
-router.get('/detalle/:id', async (req, res) => {
+router.get('/detalle/:id', sanitizeIdParam('id'), async (req, res) => {
     try{
         const { id_empresa } = req.user;
-        const id_turno = Number(req.params.id);
+        const id_turno = req.params.id;
         const [rows] = await pool.query(
             `SELECT t.*, u.nombre AS usuario, u.usuario_login
              FROM turnos t

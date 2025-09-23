@@ -3,6 +3,7 @@ const router = express.Router();
 const pool = require('../config/db');
 const verifyToken = require('../middleware/auth');
 const requireAdmin = require('../middleware/requireAdmin');
+const { sanitizeIdParam } = require('../utils/sanitize');
 
 // Todas estas rutas requieren autenticación y rol admin
 router.use(verifyToken, requireAdmin);
@@ -58,7 +59,7 @@ router.post('/', async (req, res) => {
 });
 
 // Actualizar usuario
-router.put('/:id', async (req, res) => {
+router.put('/:id', sanitizeIdParam('id'), async (req, res) => {
     try {
         const { id } = req.params;
         const { nombre, usuario_login, contraseña, rol, activo } = req.body;
@@ -108,7 +109,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // Eliminar/Desactivar usuario (seguro: set activo=false)
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', sanitizeIdParam('id'), async (req, res) => {
     try {
         const { id } = req.params;
         // No permitir que un admin se desactive a sí mismo

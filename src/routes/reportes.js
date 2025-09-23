@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../config/db');
 const verifyToken = require('../middleware/auth');
+const { sanitizeReportFilters } = require('../utils/sanitize');
 const ExcelJS = require('exceljs');
 
 // Todas las rutas requieren autenticación
@@ -54,12 +55,11 @@ router.get('/kpis', async (req, res) => {
 
 // GET /api/reportes/ingresos-por-dia
 // Serie temporal de ingresos (y opcionalmente por método)
-router.get('/ingresos-por-dia', async (req, res) => {
+router.get('/ingresos-por-dia', sanitizeReportFilters, async (req, res) => {
   try {
     const idEmpresa = req.user.id_empresa;
-    const { desde, hasta, metodo } = req.query;
-    const dDesde = (desde || new Date().toISOString().slice(0,10));
-    const dHasta = (hasta || new Date().toISOString().slice(0,10));
+    const { desde: dDesde, hasta: dHasta } = req.sanitized;
+    const metodo = (req.query && typeof req.query.metodo === 'string') ? req.query.metodo : null;
 
     let rows;
     if (metodo && ['efectivo','tarjeta','QR'].includes(metodo)) {
@@ -149,18 +149,13 @@ router.get('/ingresos-por-metodo', async (req, res) => {
 
 // GET /api/reportes/movimientos
 // Tabla de movimientos filtrable y paginada
-router.get('/movimientos', async (req, res) => {
+router.get('/movimientos', sanitizeReportFilters, async (req, res) => {
   try {
     const idEmpresa = req.user.id_empresa;
-    const {
-      desde, hasta, tipo, estado, placa, page = 0, pageSize = 20
-    } = req.query;
-
-    const dDesde = (desde || new Date().toISOString().slice(0,10));
-    const dHasta = (hasta || new Date().toISOString().slice(0,10));
-    const p = Number(page);
-    const ps = Math.min(100, Number(pageSize));
-    const offset = p * ps;
+    const { desde: dDesde, hasta: dHasta, tipo, estado, placaLike, page, pageSize } = req.sanitized;
+    const p = page;
+    const ps = pageSize;
+    const offset = page * pageSize;
 
     const where = ['m.id_empresa = ?'];
     const params = [idEmpresa];
@@ -174,8 +169,8 @@ router.get('/movimientos', async (req, res) => {
       where.push('DATE(m.fecha_salida) BETWEEN ? AND ?');
       params.push(dDesde, dHasta);
     }
-    if (tipo && ['carro','moto','bici'].includes(tipo)) { where.push('v.tipo = ?'); params.push(tipo); }
-    if (placa) { where.push('v.placa LIKE ?'); params.push(`%${placa.toUpperCase()}%`); }
+    if (tipo) { where.push('v.tipo = ?'); params.push(tipo); }
+    if (placaLike) { where.push('v.placa LIKE ? ESCAPE "\\"'); params.push(placaLike); }
 
     const whereSql = where.length ? 'WHERE ' + where.join(' AND ') : '';
 
@@ -206,13 +201,11 @@ router.get('/movimientos', async (req, res) => {
 
 // GET /api/reportes/movimientos-ajustados
 // Igual que /movimientos pero incluye columnas de métodos de pago prorrateadas (efectivo, tarjeta, QR)
-router.get('/movimientos-ajustados', async (req, res) => {
+router.get('/movimientos-ajustados', sanitizeReportFilters, async (req, res) => {
   try {
     const idEmpresa = req.user.id_empresa;
-    const { desde, hasta, tipo, estado, placa, limit = 1000 } = req.query;
-    const dDesde = (desde || new Date().toISOString().slice(0,10));
-    const dHasta = (hasta || new Date().toISOString().slice(0,10));
-    const lim = Math.min(5000, Number(limit));
+    const { desde: dDesde, hasta: dHasta, tipo, estado, placaLike, limit } = req.sanitized;
+    const lim = limit;
 
     const where = ['m.id_empresa = ?'];
     const params = [idEmpresa];
@@ -225,8 +218,8 @@ router.get('/movimientos-ajustados', async (req, res) => {
       where.push('DATE(m.fecha_salida) BETWEEN ? AND ?');
       params.push(dDesde, dHasta);
     }
-    if (tipo && ['carro','moto','bici'].includes(tipo)) { where.push('v.tipo = ?'); params.push(tipo); }
-    if (placa) { where.push('v.placa LIKE ?'); params.push(`%${String(placa).toUpperCase()}%`); }
+    if (tipo) { where.push('v.tipo = ?'); params.push(tipo); }
+    if (placaLike) { where.push('v.placa LIKE ? ESCAPE "\\"'); params.push(placaLike); }
     const whereSql = where.length ? 'WHERE ' + where.join(' AND ') : '';
 
     const [rows] = await pool.query(
@@ -291,10 +284,10 @@ router.get('/movimientos-ajustados', async (req, res) => {
 router.get('/top-placas', async (req, res) => {
   try {
     const idEmpresa = req.user.id_empresa;
-    const { desde, hasta, limit = 10 } = req.query;
+    const { desde, hasta, limit } = req.query;
     const dDesde = (desde || new Date().toISOString().slice(0,10));
     const dHasta = (hasta || new Date().toISOString().slice(0,10));
-    const lim = Math.min(50, Number(limit));
+    const lim = Math.min(50, Number(limit || 10));
     const [rows] = await pool.query(
       `SELECT v.placa, v.tipo, COUNT(*) as visitas, COALESCE(SUM(m.total_a_pagar),0) as total
        FROM movimientos m
@@ -314,18 +307,17 @@ router.get('/top-placas', async (req, res) => {
 
 // GET /api/reportes/turnos
 // Lista los cierres de turno con filtros por fecha y usuario
-router.get('/turnos', async (req, res) => {
+router.get('/turnos', sanitizeReportFilters, async (req, res) => {
   try {
     const idEmpresa = req.user.id_empresa;
-    const { desde, hasta, usuario } = req.query;
-    const dDesde = (desde || new Date().toISOString().slice(0,10));
-    const dHasta = (hasta || new Date().toISOString().slice(0,10));
+    const { desde: dDesde, hasta: dHasta } = req.sanitized;
+    const usuario = (req.query && typeof req.query.usuario === 'string') ? req.query.usuario : null;
 
     const where = ['t.id_empresa = ?'];
     const params = [idEmpresa];
     where.push('DATE(COALESCE(t.fecha_cierre, t.fecha_apertura)) BETWEEN ? AND ?');
     params.push(dDesde, dHasta);
-    if (usuario) { where.push('u.usuario_login LIKE ?'); params.push(`%${String(usuario)}%`); }
+    if (usuario) { where.push('u.usuario_login LIKE ? ESCAPE "\\"'); params.push(require('../utils/sanitize').toSafeLike(String(usuario), { uppercase: false })); }
     const whereSql = 'WHERE ' + where.join(' AND ');
 
     const [rows] = await pool.query(
@@ -346,15 +338,14 @@ router.get('/turnos', async (req, res) => {
 });
 
 // Exportar cierres de turno a Excel (sencillo)
-router.get('/turnos/export/xlsx', async (req, res) => {
+router.get('/turnos/export/xlsx', sanitizeReportFilters, async (req, res) => {
   try{
     const idEmpresa = req.user.id_empresa;
-    const { desde, hasta, usuario } = req.query;
-    const dDesde = (desde || new Date().toISOString().slice(0,10));
-    const dHasta = (hasta || new Date().toISOString().slice(0,10));
+    const { desde: dDesde, hasta: dHasta } = req.sanitized;
+    const usuario = (req.query && typeof req.query.usuario === 'string') ? req.query.usuario : null;
     const where = ['t.id_empresa = ?','DATE(COALESCE(t.fecha_cierre,t.fecha_apertura)) BETWEEN ? AND ?'];
     const params = [idEmpresa, dDesde, dHasta];
-    if (usuario) { where.push('u.usuario_login LIKE ?'); params.push(`%${String(usuario)}%`); }
+    if (usuario) { where.push('u.usuario_login LIKE ? ESCAPE "\\"'); params.push(require('../utils/sanitize').toSafeLike(String(usuario), { uppercase: false })); }
     const whereSql = 'WHERE ' + where.join(' AND ');
     const [rows] = await pool.query(
       `SELECT t.id_turno, t.fecha_apertura, t.fecha_cierre, t.base_inicial,

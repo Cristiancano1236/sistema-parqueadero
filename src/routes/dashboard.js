@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../config/db');
+const { toSafeInt } = require('../utils/sanitize');
 
 // Middleware para verificar el token
 const verifyToken = require('../middleware/auth');
@@ -8,8 +9,8 @@ const verifyToken = require('../middleware/auth');
 // Obtener estadísticas del dashboard
 router.get('/stats', verifyToken, async (req, res) => {
     try {
-        const pageSize = Number(req.query.pageSize || 5);
-        const page = Number(req.query.page || 0);
+        const pageSize = toSafeInt(req.query.pageSize, { min: 1, max: 50, fallback: 5 });
+        const page = toSafeInt(req.query.page, { min: 0, max: 100000, fallback: 0 });
         const offset = page * pageSize;
         // Obtener vehículos actuales por tipo
         const [currentVehiclesByType] = await pool.query(

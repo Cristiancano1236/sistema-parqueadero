@@ -15,6 +15,26 @@
         .receipt h6 { font-weight: 600; }
         .print-area { background: #fff; }
         @media print { .no-print { display: none !important; } .print-area { box-shadow: none !important; } }
+        /* Selector rápido de tipo de vehículo (moderno y minimalista) */
+        .veh-tipo-toggle .btn {
+            border-width: 2px;
+            padding: 0.5rem 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .5rem;
+            flex: 1 0 110px; /* ancho base por botón para laptops */
+            min-width: 110px; /* evita compresión excesiva del texto */
+            white-space: nowrap;
+        }
+        .veh-tipo-toggle .btn i { font-size: 1.1rem; }
+        .btn-check:checked + .btn {
+            border-color: var(--bs-primary);
+            color: #fff; 
+            background-color: var(--bs-primary);
+            box-shadow: 0 0 0 .2rem rgba(13,110,253,.15);
+        }
+        .veh-tipo-toggle { gap: .5rem; width: 100%; display: flex; flex-wrap: wrap; }
     </style>
     <script>
         if (!localStorage.getItem('token')) { window.location.href = '/'; }
@@ -57,16 +77,21 @@
                                     <label class="form-label">Placa</label>
                                     <input type="text" id="ingPlaca" class="form-control" placeholder="ABC123" required>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-12 col-md-6 col-lg-5">
                                     <label class="form-label">Tipo</label>
-                                    <select id="ingTipo" class="form-select" required>
-                                        <option value="">Seleccione</option>
-                                        <option value="carro">Carro</option>
-                                        <option value="moto">Moto</option>
-                                        <option value="bici">Bicicleta</option>
-                                    </select>
+                                    <!-- Reemplazo del combo por selector de un clic con radios + botones Bootstrap -->
+                                    <div class="veh-tipo-toggle d-flex">
+                                        <input type="radio" class="btn-check" name="ingTipo" id="tipoCarro" autocomplete="off" value="carro">
+                                        <label class="btn btn-outline-primary" for="tipoCarro" title="Carro"><i class="fas fa-car-side"></i><span class="d-none d-md-inline">Carro</span></label>
+
+                                        <input type="radio" class="btn-check" name="ingTipo" id="tipoMoto" autocomplete="off" value="moto">
+                                        <label class="btn btn-outline-primary" for="tipoMoto" title="Moto"><i class="fas fa-motorcycle"></i><span class="d-none d-md-inline">Moto</span></label>
+
+                                        <input type="radio" class="btn-check" name="ingTipo" id="tipoBici" autocomplete="off" value="bici">
+                                        <label class="btn btn-outline-primary" for="tipoBici" title="Bicicleta"><i class="fas fa-bicycle"></i><span class="d-none d-md-inline">Bici</span></label>
+                                    </div>
                                 </div>
-                                <div class="col-md-3 d-flex align-items-end">
+                                <div class="col-12 col-md-3 col-lg-2 d-flex align-items-end mt-2 mt-md-0">
                                     <button class="btn btn-success w-100" type="submit"><i class="fas fa-play me-2"></i>Ingresar</button>
                                 </div>
                             </form>
@@ -227,7 +252,7 @@
             e.preventDefault();
             await ensureEmpresaConfig();
             const placa = document.getElementById('ingPlaca').value.trim().toUpperCase();
-            const tipo = document.getElementById('ingTipo').value;
+            const tipo = (document.querySelector('input[name="ingTipo"]:checked')||{}).value || '';
             const res = await fetch('/api/movimientos/ingreso',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({placa,tipo})});
             const data = await res.json();
             if(!res.ok){alert(data.message||'Error');return;}

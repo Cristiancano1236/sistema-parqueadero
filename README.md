@@ -147,6 +147,16 @@ schema.sql             # Esquema, vistas, procedimiento y datos seed
 - `public/uploads/` (si existía en versiones previas) está ignorado; actualmente el logo se almacena como BLOB.
 - Asegúrese de configurar `JWT_SECRET` en producción.
 
+### Endurecimiento contra SQLi y cambios recientes
+- Se añadió utilitario `src/utils/sanitize.js` con:
+  - `toSafeInt`, `toSafeLike` (usa `ESCAPE '\\'`), `toSafeTipoVehiculo`
+  - Middlewares `sanitizeReportFilters` y `sanitizeIdParam`
+- Se deshabilitó `multipleStatements` en `src/config/db.js`.
+- Rutas actualizadas para sanitizar filtros/paginación e IDs:
+  - `reportes.js`, `dashboard.js`, `movimientos.js`, `turnos.js`, `vehiculos.js`, `usuarios.js`.
+- Login reforzado: normalización de entradas (trim), validación previa y auditoría.
+- UI: En `public/admin/ingreso-salida.html` el combo de tipo se reemplazó por botones de selección (Carro/Moto/Bici) con diseño moderno y responsivo.
+
 ### Licencia
 ISC © Ciscode
 

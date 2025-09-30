@@ -5,7 +5,11 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "nodemon src/server.js"
+    "dev": "nodemon src/server.js",
+    "build:clean": "rimraf dist && mkdirp dist",
+    "build:exe": "pkg src/server.js --targets node18-win-x64 --output dist/parqueadero.exe",
+    "build:copy": "cpy \"public/**\" dist/public --cwd=. --parents && cpy schema.sql .env* dist/ --cwd=.",
+    "build": "npm run build:clean && npm run build:exe && npm run build:copy"
   },
   "keywords": [],
   "author": "Cristian Cano",
@@ -22,6 +26,10 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.10",
+    "pkg": "^5.8.1",
+    "cpy-cli": "^5.0.0",
+    "rimraf": "^5.0.7",
+    "mkdirp": "^3.0.1",
     "youtube-transcript": "^1.2.1",
     "youtubei.js": "^15.1.1",
     "ytdl-core": "^4.11.5"

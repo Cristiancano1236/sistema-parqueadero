@@ -390,7 +390,7 @@
                     .wrap{ padding:4mm }
                     hr{ border:none; border-top:1px dashed #999; margin:6px 0 }
                     img{ display:block; margin:0 auto 6px; max-width:100% }
-                    .qr{ display:flex; justify-content:center; margin-top:6px }
+                    .qr{ display:none; justify-content:center; margin-top:6px }
                     .barcode{ display:flex; justify-content:center; margin-top:6px }
                 </style>
             </head><body><div class="wrap">${html}<div class="qr"><div id="qrcode"></div></div></div>
@@ -402,14 +402,22 @@
                     // Parse payload (JSON) sólo para código de barras (placa)
                     var raw = JSON.parse(decodeURIComponent('${payload}'));
                     var payload = (typeof raw === 'string') ? JSON.parse(raw) : raw;
-                    // QR siempre apunta al sitio de Ciscode
-                    new QRCode(document.getElementById('qrcode'), {text: ciscodeUrl, width:96, height:96});
-                    // Render barcode si existe elemento
+                    // Mostrar QR sólo si se habilita explícitamente en el payload (qr|enableQR = true)
+                    var enableQR = !!(payload && (payload.qr === true || payload.enableQR === true));
+                    if (enableQR) {
+                        try {
+                            var qrEl = document.getElementById('qrcode');
+                            if (qrEl) {
+                                new QRCode(qrEl, {text: ciscodeUrl, width:96, height:96});
+                                if (qrEl.parentElement) { qrEl.parentElement.style.display = 'flex'; }
+                            }
+                        } catch(_e) {}
+                    }
+                    // Render barcode si existe elemento (placa)
                     var svg = document.getElementById('barcodeSvg');
                     if (svg) { JsBarcode(svg, (payload && (payload.p || payload.placa)) || '', {format:'code128', displayValue:false, height:40}); }
                 }catch(e){
-                    // Fallback mínimo: QR con URL aunque falle el payload
-                    try { new QRCode(document.getElementById('qrcode'), {text: ciscodeUrl, width:96, height:96}); } catch(_e){}
+                    // Sin QR en fallback
                 }
                 setTimeout(function(){ window.print(); window.close(); }, 400);
             })();<\/script>

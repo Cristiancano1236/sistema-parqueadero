@@ -381,15 +381,26 @@ function imprimirHTML(html, titulo, anchoMM, qrPayload){
             .wrap{ padding:4mm }
             hr{ border:none; border-top:1px dashed #999; margin:6px 0 }
             img{ display:block; margin:0 auto 6px; max-width:100% }
-            .qr{ display:flex; justify-content:center; margin-top:6px }
+            .qr{ display:none; justify-content:center; margin-top:6px }
         </style>
     </head><body><div class="wrap">${html}<div class="qr"><div id="qrcode"></div></div></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
     <script>(function(){
+        var payload = {};
+        var enableQR = false;
         try{
-            var payload = JSON.parse(decodeURIComponent('${payload}'));
-            new QRCode(document.getElementById('qrcode'), {text: JSON.stringify(payload), width:96, height:96});
+            payload = JSON.parse(decodeURIComponent('${payload}'));
+            enableQR = !!(payload && (payload.qr === true || payload.enableQR === true));
         }catch(e){}
+        if (enableQR) {
+            try{
+                var el = document.getElementById('qrcode');
+                if (el) {
+                    new QRCode(el, {text: JSON.stringify(payload), width:96, height:96});
+                    if (el.parentElement) { el.parentElement.style.display = 'flex'; }
+                }
+            }catch(_){ }
+        }
         setTimeout(function(){ window.print(); window.close(); }, 400);
     })();<\/script>
     </body></html>`;
